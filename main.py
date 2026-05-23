@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
 
 # In[1]:
 
@@ -53,7 +51,7 @@ print(df.head())
 # In[3]:
 
 
-  # Check dataset shape
+# Check dataset shape
 print("\nDataset shape:")
 print(df.shape)
   # Check the target variable distribution
