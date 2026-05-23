@@ -1,5 +1,7 @@
+#!/usr/bin/env python
+# coding: utf-8
 
-# In[1]:
+# In[ ]:
 
 
 import pandas as pd
@@ -31,7 +33,7 @@ from sklearn.metrics import (
 sns.set(style="whitegrid")
 
 
-# In[2]:
+# In[ ]:
 
 
 # Define column names based on the UCI Credit Approval dataset documentation
@@ -48,10 +50,10 @@ print("First five rows:")
 print(df.head())
 
 
-# In[3]:
+# In[ ]:
 
 
-# Check dataset shape
+  # Check dataset shape
 print("\nDataset shape:")
 print(df.shape)
   # Check the target variable distribution
@@ -67,7 +69,7 @@ plt.close()
 print("\nSaved approval distribution chart to approval_distribution.png")
 
 
-# In[4]:
+# In[ ]:
 
 
 # Replace question marks with NaN
@@ -90,7 +92,7 @@ print("Missing values before cleaning:")
 print(df.isna().sum())
 
 
-# In[5]:
+# In[ ]:
 
 
 # Fill missing numeric values with the median
@@ -106,7 +108,7 @@ print("Missing values after cleaning:")
 print(df.isna().sum())
 
 
-# In[6]:
+# In[ ]:
 
 
 # Separate features from target variable
@@ -117,7 +119,7 @@ X = df.drop("A16", axis=1)
 y = df["A16"].map({"+": 1, "-": 0})
 
 
-# In[7]:
+# In[ ]:
 
 
 # Confirm feature and target dimensions
@@ -125,7 +127,7 @@ print("\nFeature and target dimensions:")
 print(X.shape, y.shape)
 
 
-# In[8]:
+# In[ ]:
 
 
 # Check target class distribution
@@ -133,7 +135,7 @@ print("\nTarget class distribution:")
 print(y.value_counts())
 
 
-# In[9]:
+# In[ ]:
 
 
 X_train, X_test, y_train, y_test = train_test_split(
@@ -145,7 +147,7 @@ X_train, X_test, y_train, y_test = train_test_split(
   )
 
 
-# In[10]:
+# In[ ]:
 
 
 # Check the size of each split
@@ -153,21 +155,21 @@ print("\nTrain/test split sizes:")
 print(X_train.shape, X_test.shape, y_train.shape, y_test.shape)
 
 
-# In[11]:
+# In[ ]:
 
 
 print("\nTraining target distribution:")
 print(y_train.value_counts())
 
 
-# In[12]:
+# In[ ]:
 
 
 print("\nTest target distribution:")
 print(y_test.value_counts())
 
 
-# In[13]:
+# In[ ]:
 
 
 # Identify numeric and categorical columns
@@ -187,7 +189,7 @@ preprocessor = ColumnTransformer(
   )
 
 
-# In[14]:
+# In[ ]:
 
 
 # Create a pipeline with preprocessing and logistic regression model
@@ -202,7 +204,7 @@ model = Pipeline(
 model.fit(X_train, y_train)
 
 
-# In[15]:
+# In[ ]:
 
 
 # Check model training score
@@ -210,14 +212,14 @@ print("\nModel training score:")
 print(model.score(X_train, y_train))
 
 
-# In[16]:
+# In[ ]:
 
 
 # Make predictions on the test set
 y_pred = model.predict(X_test)
 
 
-# In[17]:
+# In[ ]:
 
 
 # Calculate evaluation metrics
@@ -234,7 +236,7 @@ print("\nEvaluation metrics:")
 print(metrics)
 
 
-# In[18]:
+# In[ ]:
 
 
 # Display detailed classification report
@@ -242,7 +244,7 @@ report = classification_report(y_test, y_pred, target_names=["Rejected", "Approv
 print(report)
 
 
-# In[19]:
+# In[ ]:
 
 
 # Create confusion matrix
@@ -252,7 +254,7 @@ print("\nConfusion matrix:")
 print(cm)
 
 
-# In[20]:
+# In[ ]:
 
 
  # Visualize confusion matrix
@@ -273,4 +275,102 @@ plt.tight_layout()
 plt.savefig("confusion_matrix.png")
 plt.close()
 print("\nSaved confusion matrix chart to confusion_matrix.png")
+
+
+# In[ ]:
+
+
+# Extract transformed feature names from the preprocessing step
+feature_names = model.named_steps[
+    "preprocessor"
+].get_feature_names_out()
+
+print("\nTransformed feature names:")
+print(feature_names)
+
+
+# In[ ]:
+
+
+# Extract logistic regression coefficients
+coefficients = model.named_steps[
+    "classifier"
+].coef_[0]
+
+print("\nLogistic regression coefficients:")
+print(coefficients)
+
+
+# In[ ]:
+
+
+# Convert coefficients from log-odds into odds ratios
+odds_ratios = np.exp(coefficients)
+
+print("\nOdds ratios:")
+print(odds_ratios)
+
+
+# In[ ]:
+
+
+# Create a DataFrame to organize features, coefficients, and odds ratios
+odds_df = pd.DataFrame({
+    "Feature": feature_names,
+    "Coefficient": coefficients,
+    "Odds Ratio": odds_ratios
+})
+
+print("\nOdds ratio table:")
+print(odds_df.head())
+
+
+# In[ ]:
+
+
+# Show the top features that increase the odds of credit approval
+top_positive_odds = odds_df.sort_values(
+    by="Odds Ratio",
+    ascending=False
+).head(10)
+
+print("\nTop features that increase the odds of credit approval:")
+print(top_positive_odds)
+
+
+# In[ ]:
+
+
+# Show the top features that decrease the odds of credit approval
+top_negative_odds = odds_df.sort_values(
+    by="Odds Ratio",
+    ascending=True
+).head(10)
+
+print("\nTop features that decrease the odds of credit approval:")
+print(top_negative_odds)
+
+
+# In[ ]:
+
+
+# Visualize the top positive odds ratios
+top_features = odds_df.sort_values(
+    by="Odds Ratio",
+    ascending=False
+).head(10)
+
+plt.figure(figsize=(10, 6))
+
+sns.barplot(
+    data=top_features,
+    x="Odds Ratio",
+    y="Feature"
+)
+
+plt.title("Top Positive Odds Ratios")
+plt.tight_layout()
+plt.savefig("top_positive_odds_ratios.png")
+plt.close()
+print("\nSaved top positive odds ratios chart to top_positive_odds_ratios.png")
 
